@@ -529,6 +529,48 @@
     const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:0.2});
     cards.forEach(c=>io.observe(c));
   })();
+
+  // ── PARALLAX SCROLL (Option B) ──────────────────────────────────────────
+  (function(){
+    // Kill switch: mobile + reduced-motion
+    if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if(window.innerWidth < 768) return;
+
+    var heroPhoto = document.querySelector('.hero-photo');
+    var mImgs    = document.querySelectorAll('.mcard .mimg');
+    var mgrid    = document.querySelector('.mgrid');
+    var pending  = false;
+
+    function tick(){
+      pending = false;
+      var sy = window.pageYOffset;
+
+      // Hero background: scrolls at 30% of page speed → depth illusion
+      if(heroPhoto){
+        heroPhoto.style.backgroundPositionY = 'calc(50% + ' + (sy * 0.30).toFixed(1) + 'px)';
+      }
+
+      // Memory card images: subtle zoom as section enters viewport
+      if(mImgs.length && mgrid){
+        var rect     = mgrid.getBoundingClientRect();
+        var progress = Math.max(0, Math.min(1, (window.innerHeight - rect.top) / window.innerHeight));
+        var scale    = (1 + progress * 0.07).toFixed(4);
+        for(var i=0; i<mImgs.length; i++){
+          mImgs[i].style.transform       = 'scale(' + scale + ')';
+          mImgs[i].style.transformOrigin = 'center center';
+        }
+      }
+    }
+
+    window.addEventListener('scroll', function(){
+      if(!pending){ pending = true; requestAnimationFrame(tick); }
+    }, { passive: true });
+
+    // Run once on load to set initial state
+    tick();
+  })();
+  // ── END PARALLAX ──────────────────────────────────────────────────────────
+
 </script>
 </body>
 </html>
